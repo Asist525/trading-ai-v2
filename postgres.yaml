@@ -1,0 +1,51 @@
+# postgres.yaml: PostgreSQL StatefulSet 및 Service 정의
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    name: pg
+  clusterIP: None  # Headless service (StatefulSet용)
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: "postgres-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15  # PostgreSQL 공식 이미지
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "kisdb"
+        - name: POSTGRES_USER
+          value: "kisuser"
+        - name: POSTGRES_PASSWORD
+          value: "kispass"
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data  # 데이터 영구 저장 위치
+  volumeClaimTemplates:
+  - metadata:
+      name: pgdata
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi

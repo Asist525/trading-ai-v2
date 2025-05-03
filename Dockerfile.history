@@ -1,0 +1,14 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY history/requirements.txt ./requirements.txt 
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY history/ ./history/
+
+WORKDIR /app/history
+
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "fetch_price.py"]

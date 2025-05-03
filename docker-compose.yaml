@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  django-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    container_name: django-backend
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - db
+      - redis
+
+  kis-collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.collector
+    container_name: kis-collector
+    command: python kis_ws_client.py
+    working_dir: /app/collector
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+  history-fetcher:
+    build:
+      context: .
+      dockerfile: Dockerfile.history
+    container_name: history-fetcher
+    command: python fetch_yfinance.py
+    working_dir: /app/history
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

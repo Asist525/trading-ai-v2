@@ -1,0 +1,30 @@
+#collector-deploy.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kis-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kis-collector
+  template:
+    metadata:
+      labels:
+        app: kis-collector
+    spec:
+      containers:
+      - name: collector
+        image: kis-collector:latest
+        imagePullPolicy: Never
+        env:
+        - name: KIS_APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: kis-secret
+              key: APP_KEY_REAL
+        - name: KIS_APP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: kis-secret
+              key: APP_SECRET_REAL

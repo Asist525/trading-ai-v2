@@ -1,0 +1,14 @@
+#kis-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kis-config
+data:
+  KIS_MODE: "real"
+  KIS_API_REAL: "https://openapi.koreainvestment.com:9443"
+  KIS_PROD_CODE: "01"
+  KIS_ACCT_REAL: "46206968"
+  DB_HOST: postgres-service
+  DB_NAME: kisdb
+  DB_USER: kisuser
+  DB_PASS: kispass
