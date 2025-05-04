@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   db:
+    env_file: .env 
     image: postgres:15
     container_name: postgres-db
     environment:
@@ -14,27 +15,33 @@ services:
       - "5432:5432"
 
   redis:
+    env_file: .env 
     image: redis:7-alpine
     container_name: redis
     ports:
       - "6379:6379"
 
   django-backend:
+    env_file: .env 
     build:
       context: .
       dockerfile: Dockerfile.django
     container_name: django-backend
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 backend.asgi:application"
+    working_dir: /app
     volumes:
       - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
     ports:
       - "8000:8000"
-
     depends_on:
       - db
       - redis
 
   kis-collector:
+    env_file: .env 
     build:
       context: .
       dockerfile: Dockerfile.collector
@@ -43,10 +50,15 @@ services:
     working_dir: /app/collector
     volumes:
       - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
     depends_on:
       - db
       - redis
+
   history-fetcher:
+    env_file: .env 
     build:
       context: .
       dockerfile: Dockerfile.history
@@ -55,6 +67,9 @@ services:
     working_dir: /app/history
     volumes:
       - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
     depends_on:
       - db
 

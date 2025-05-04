@@ -8,13 +8,13 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
-import core.routing  # ← 이 줄 있어야 함
+import core.routing  
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            core.routing.websocket_urlpatterns  # ← 정확히 이 변수로 등록해야 함
+            core.routing.websocket_urlpatterns 
         )
     ),
 })

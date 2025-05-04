@@ -1,15 +1,16 @@
-# Dockerfile.collector
 FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY collector/requirements.txt ./requirements.txt
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY collector/ ./collector/
+COPY . .
 
 WORKDIR /app/collector
 
 ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=backend.settings
+ENV PYTHONPATH=/app
 
 CMD ["python", "kis_ws_client.py"]

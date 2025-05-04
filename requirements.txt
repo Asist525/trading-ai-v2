@@ -1,6 +1,22 @@
+# Django & Web Framework
 Django>=4.0
 gunicorn
 channels==4.0.0
 daphne==4.0.0
 channels_redis==4.1.0
-websocket-client
+
+# WebSocket & Networking
+websocket-client>=1.6.0
+requests>=2.31.0
+
+# PostgreSQL Driver
+psycopg2-binary
+
+# Data Handling
+pandas>=2.2.2
+yfinance
+
+# 기타 유틸
+pyyaml
+pycryptodome
+pytz>=2024.1

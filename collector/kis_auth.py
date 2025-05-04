@@ -65,7 +65,7 @@ TREnv = namedtuple(
 _TRENV: TREnv | None = None
 _LAST_AUTH = datetime.min
 
-def getTREnv():          # kis_domstk.py 가 기대
+def getTREnv():         
     return _TRENV
 
 # ───────────────────────────── 4. 인증 (403 재시도 내장)

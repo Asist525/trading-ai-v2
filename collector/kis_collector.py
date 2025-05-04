@@ -51,7 +51,7 @@ KST = pytz.timezone("Asia/Seoul")
 #: 한국장 기본 거래 가능 시간대(원하는 대로 조정)
 TRADING_WINDOWS: List[Tuple[dt.time, dt.time]] = [
     (dt.time(9, 0), dt.time(15, 30)),   # 정규장 (장전포함)
-    (dt.time(15, 40), dt.time(18, 0)),  # 시간외단일가(예시)
+    (dt.time(15, 40), dt.time(18, 0)),  # 시간외단일가(예시) // 향후 코딩 필요
 ]
 
 __all__ = [
