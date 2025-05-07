@@ -1,93 +1,85 @@
-    version: "3.9"
+version: "3.9"
 
-    services:
-      db:
-        env_file: .env 
-        image: postgres:15
-        container_name: postgres-db
-        environment:
-          POSTGRES_DB: ${DB_NAME}
-          POSTGRES_USER: ${DB_USER}
-          POSTGRES_PASSWORD: ${DB_PASS}
-        volumes:
-          - postgres_data:/var/lib/postgresql/data
-        ports:
-          - "5432:5432"
-
-      redis:
-        env_file: .env 
-        image: redis:7-alpine
-        container_name: redis
-        ports:
-          - "6379:6379"
-
-      django-backend:
-        env_file: .env 
-        build:
-          context: .
-          dockerfile: Dockerfile.django
-        container_name: django-backend
-        command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 backend.asgi:application"
-        working_dir: /app
-        volumes:
-          - .:/app
-        environment:
-          - PYTHONUNBUFFERED=1
-          - DJANGO_SETTINGS_MODULE=backend.settings
-        ports:
-          - "8000:8000"
-        depends_on:
-          - db
-          - redis
-
-      kis-collector:
-        env_file: .env 
-        build:
-          context: .
-          dockerfile: Dockerfile.collector
-        container_name: kis-collector
-        command: python kis_ws_client.py
-        working_dir: /app/collector
-        volumes:
-          - .:/app
-        environment:
-          - PYTHONUNBUFFERED=1
-          - DJANGO_SETTINGS_MODULE=backend.settings
-        depends_on:
-          - db
-          - redis
-
-      history-fetcher:
-        env_file: .env 
-        build:
-          context: .
-          dockerfile: Dockerfile.history
-        container_name: history-fetcher
-        command: python fetch_yfinance.py
-        working_dir: /app/history
-        volumes:
-          - .:/app
-        environment:
-          - PYTHONUNBUFFERED=1
-          - DJANGO_SETTINGS_MODULE=backend.settings
-        depends_on:
-          - db
-
-      ai-system:
-        env_file: .env
-        build:
-          context: .
-          dockerfile: Dockerfile._AI
-        container_name: ai-system
-        command: python normalization.py
-        working_dir: /app/AI
-        volumes:
-          - .:/app
-        environment:
-          - PYTHONUNBUFFERED=1
-          - DJANGO_SETTINGS_MODULE=backend.settings
-        depends_on:
-          - db
-
+services:
+  db:
+    image: postgres:15
+    env_file: .env
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
-      postgres_data:
+      - postgres_data:/var/lib/postgresql/data
+    ports: ["5432:5432"]
+
+  redis:
+    image: redis:7-alpine
+    env_file: .env
+    container_name: redis
+    ports: ["6379:6379"]
+
+  django-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    env_file: .env
+    container_name: django-backend
+    command: >
+      sh -c "python manage.py migrate &&
+             daphne -b 0.0.0.0 -p 8000 backend.asgi:application"
+    working_dir: /app
+    volumes: ["./:/app"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    ports: ["8000:8000"]
+    depends_on: [db, redis]
+
+  kis-collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.collector
+    env_file: .env
+    container_name: kis-collector
+    command: python kis_ws_client.py
+    working_dir: /app/collector
+    volumes: ["./:/app"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    depends_on: [db, redis]
+
+  history-fetcher:
+    build:
+      context: .
+      dockerfile: Dockerfile.history
+    env_file: .env
+    container_name: history-fetcher
+    command: python fetch_yfinance.py
+    working_dir: /app/history
+    volumes: ["./:/app"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    depends_on: [db]
+
+  ai-system:
+    build:
+      context: .
+      dockerfile: Dockerfile._AI
+    env_file: .env
+    container_name: ai-system
+    working_dir: /app/AI
+    command: ["sleep", "infinity"]     # ← 평상시엔 대기
+    volumes:
+      - ./AI:/app/AI                   # 코드
+      - ./data:/app/data               # 학습모델·캐시
+      - .:/app                         # (필요하면 전체 소스)
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=backend.settings
+    depends_on: [db]
+
+volumes:
+  postgres_data:
