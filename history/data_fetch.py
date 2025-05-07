@@ -1,6 +1,6 @@
 import os, sys, django, pandas as pd, yfinance as yf
 
-# Django 환경 설정
+# ── Django 환경 설정 ───────────────────────────────────────────────
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if str(BASE_DIR) not in sys.path:
     sys.path.append(str(BASE_DIR))
@@ -9,6 +9,7 @@ django.setup()
 
 from core.models import DailyPrice
 
+# ── Yahoo Finance 데이터 가져오기 ────────────────────────────────
 def fetch_data(symbol: str, period="10y", interval="1d") -> pd.DataFrame:
     ticker = yf.Ticker(symbol)
     df = ticker.history(period=period, interval=interval)
@@ -25,6 +26,7 @@ def fetch_data(symbol: str, period="10y", interval="1d") -> pd.DataFrame:
     df['symbol'] = symbol
     return df
 
+# ── 데이터베이스 저장 ────────────────────────────────────────────
 def save_to_db(df: pd.DataFrame):
     records = [
         DailyPrice(
@@ -40,8 +42,11 @@ def save_to_db(df: pd.DataFrame):
     ]
     DailyPrice.objects.bulk_create(records, ignore_conflicts=True)
 
+# ── 메인 실행부 ─────────────────────────────────────────────────
 if __name__ == "__main__":
     symbol = "QQQ"
     df = fetch_data(symbol)
+    print("[원본 5행]")
     print(df.head())
     save_to_db(df)
+    print("[데이터 저장 완료]")
